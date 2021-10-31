@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:quizzler/QuizzBrain.dart';
 
 QuizzBrain quizzBrain = QuizzBrain();
@@ -6,8 +7,12 @@ QuizzBrain quizzBrain = QuizzBrain();
 void main() => runApp(Quizzler());
 
 class Quizzler extends StatelessWidget {
+  final QuizzBrain controller = QuizzBrain();
+
   @override
   Widget build(BuildContext context) {
+    Get.put(controller);
+
     return MaterialApp(
       home: Scaffold(
         backgroundColor: Colors.grey.shade900,
@@ -22,32 +27,8 @@ class Quizzler extends StatelessWidget {
   }
 }
 
-class QuizPage extends StatefulWidget {
-  @override
-  _QuizPageState createState() => _QuizPageState();
-}
-
-class _QuizPageState extends State<QuizPage> {
-  int index = 0;
-  List<Icon> results = [];
-
-  void checkAnswer(bool answer) {
-    setState(() {
-      if (quizzBrain.getAnswer() == answer) {
-        results.add(Icon(
-          Icons.check,
-          color: Colors.green,
-        ));
-      } else {
-        results.add(Icon(
-          Icons.clear,
-          color: Colors.red,
-        ));
-      }
-
-      quizzBrain.changeIndex();
-    });
-  }
+class QuizPage extends StatelessWidget {
+  final QuizzBrain controller = Get.find<QuizzBrain>();
 
   @override
   Widget build(BuildContext context) {
@@ -60,58 +41,81 @@ class _QuizPageState extends State<QuizPage> {
           child: Padding(
             padding: EdgeInsets.all(10.0),
             child: Center(
-              child: Text(
-                quizzBrain.getQuestion(),
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 25.0,
-                  color: Colors.white,
-                ),
-              ),
+              child: Obx(() {
+                return Text(
+                  controller.getText(),
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 25.0,
+                    color: Colors.white,
+                  ),
+                );
+              })
             ),
           ),
         ),
-        Expanded(
-          child: Padding(
-            padding: EdgeInsets.all(15.0),
-            child: FlatButton(
-              textColor: Colors.white,
-              color: Colors.green,
-              child: Text(
-                'True',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 20.0,
-                ),
-              ),
-              onPressed: () {
-                checkAnswer(true);
-              },
-            ),
-          ),
+        Builder(
+          builder: (context) {
+            return AnswerButton(
+              value: true,
+              background: Colors.green,
+            );
+          }
         ),
-        Expanded(
-          child: Padding(
-            padding: EdgeInsets.all(15.0),
-            child: FlatButton(
-              color: Colors.red,
-              child: Text(
-                'False',
-                style: TextStyle(
-                  fontSize: 20.0,
-                  color: Colors.white,
-                ),
-              ),
-              onPressed: () {
-                checkAnswer(false);
-              },
-            ),
-          ),
+        AnswerButton(
+          value: false,
+          background: Colors.red,
         ),
-        Row(
-          children: results,
-        ),
+        Obx(() {
+          return Row(
+            children: controller.checks.map(
+                    (bool value) => Icon(
+                  value ? Icons.check : Icons.clear,
+                  color: value ? Colors.green : Colors.red,
+                )
+            ).toList(),
+          );
+        })
       ],
     );
   }
 }
+
+class AnswerButton extends StatelessWidget {
+  final QuizzBrain controller = Get.find<QuizzBrain>();
+  final bool value;
+  final Color background;
+
+  AnswerButton({required this.value, required this.background});
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: Padding(
+        padding: EdgeInsets.all(15.0),
+        child: Stack(
+            children: [
+              Container(
+                decoration: BoxDecoration(
+                    color: background
+                ),
+              ),
+              TextButton(
+                child: Center(
+                  child: Text(
+                    value.toString().toUpperCase(),
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 20.0,
+                    ),
+                  ),
+                ),
+                onPressed: () => controller.checkAnswer(value),
+              ),
+            ]
+        ),
+      ),
+    );
+  }
+}
+

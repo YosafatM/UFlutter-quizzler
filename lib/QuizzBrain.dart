@@ -1,47 +1,20 @@
-import 'package:quizzler/Question.dart';
+import 'package:get/get.dart';
 
-class QuizzBrain {
-  int _index = 0;
+import 'constants.dart';
 
-  List<Question> _questions = [
-    Question('Some cats are actually allergic to humans', true),
-    Question('You can lead a cow down stairs but not up stairs.', false),
-    Question('Approximately one quarter of human bones are in the feet.', true),
-    Question('A slug\'s blood is green.', true),
-    Question('Buzz Aldrin\'s mother\'s maiden name was \"Moon\".', true),
-    Question('It is illegal to pee in the Ocean in Portugal.', true),
-    Question(
-        'No piece of square dry paper can be folded in half more than 7 times.',
-        false),
-    Question(
-        'In London, UK, if you happen to die in the House of Parliament, you are technically entitled to a state funeral, because the building is considered too sacred a place.',
-        true),
-    Question(
-        'The loudest sound produced by any animal is 188 decibels. That animal is the African Elephant.',
-        false),
-    Question(
-        'The total surface area of two human lungs is approximately 70 square metres.',
-        true),
-    Question('Google was originally called \"Backrub\".', true),
-    Question(
-        'Chocolate affects a dog\'s heart and nervous system; a few ounces are enough to kill a small dog.',
-        true),
-    Question(
-        'In West Virginia, USA, if you accidentally hit an animal with your car, you are free to take it home to eat.',
-        true),
-  ];
+class QuizzBrain extends GetxController {
+  Rx<int> _index = 0.obs;
+  final List<bool> checks = <bool>[].obs;
 
-  String getQuestion() {
-    return _questions[_index].q;
+  String getText() {
+    return questions[_index.value].question;
   }
 
-  bool getAnswer() {
-    return _questions[_index].a;
-  }
+  void checkAnswer(bool answer) {
+    if (_index.value == questions.length - 1) return;
 
-  void changeIndex() {
-    if (_index == _questions.length - 1) return;
-
-    _index++;
+    checks.add(questions[_index.value].answer == answer);
+    _index.value++;
+    update();
   }
 }
